@@ -15,7 +15,7 @@ pip install datetime
 
 ## Usage
 scraper.py
-
+'''python
 For fast usage:
 Method 1 (Specifying Start Date & End Date) Example:
 	py cs.py 2022-07-03 2022-10-23
