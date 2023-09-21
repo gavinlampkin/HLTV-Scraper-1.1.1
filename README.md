@@ -14,17 +14,17 @@ pip install datetime
 ```
 
 ## Usage
-scraper.py
+py scraper.py
 ```python
 For Fast Usage:
 Method 1 (Specifying Start Date & End Date) Example:
-	py cs.py 2022-07-03 2022-10-23
+	py scraper.py 2022-07-03 2022-10-23
  
 Method 2 (Specifying Start Date only, End Date will be considered as of today) Example:
-	py cs.py 2022-07-03
+	py scraper.py 2022-07-03
  
 Method 3 (Searching for a specific player's stats!) Example searching for player name 's1mple':
-	py cs.py search for s1mple
+	py scraper.py search for s1mple
 
 ## Contributing
 
