@@ -1,6 +1,8 @@
 # HLTV Scraper
 
-This HLTV scraper is used for scraping stats from top teams and players specified by date or all time.
+HLTV Scraper is used for retrieving data from HLTV.com. I chose to use selenium instead of requests to get a better understanding of how it works.
+You can retrieve top players' and teams' stats effortlessly as well as lookup your favorite player and see how they compare to the average statistics.
+I will continue to update with more complex ways of comparing players, teams, and eventually enable the ability to lookup past matches.
 
 ## Libraries Needed
 
