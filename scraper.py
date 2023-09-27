@@ -29,7 +29,9 @@ The Program allows its users to:
 Thanks for using our CSGO Stats Scraper.
 github: gavinx17
 """
+# Global Variables
 
+average_rating = 0
 # This Block is intended for the Faster Usage Ability of cs.py from console
 arguments_list = sys.argv
 if (len(arguments_list) > 1):
@@ -180,10 +182,11 @@ def find_player_stats(target_player, df):
 	target_player_name_count = 0
 	for player_number in range(0,len(df)):
 		if df.iloc[player_number]['Player'] == target_player:
-			print("[" + df.iloc[player_number] + "]")
+			print_data(player_number, df)
+			player_lookup(df)
 			target_player_name_count += 1
-	if target_player_name_count == 0:
-		print(f"[!ERROR!] {target_player} couldn't be found in the top leaderboards.\n[!] Player Names are CASE Sensitive.")
+			if target_player_name_count == 0:
+				print(f"[!ERROR!] {target_player} couldn't be found in the top leaderboards.\n[!] Player Names are CASE Sensitive.")
 
 def all_players_list():
 
@@ -202,6 +205,7 @@ def all_players_list():
 	k_d_diff_floats=list()
 	map_floats=list()
 	round_floats=list()
+	global average_rating
 	players_dictionary = {"Player": players_name_list, "Maps": maps_list, "Rounds": rounds_list, "K-D Diff": k_d_diff_list, "K/D": k_d_list, "Rating": rating_list}
 
 	for element_tag in soup.find_all("tbody"):
@@ -222,7 +226,7 @@ def all_players_list():
 					rounds_list.append(player_soup.string)
 					rounds = str(player_soup.string)
 					round_floats.append(int(rounds))
-				elif player_soup.find(class_="kdDiffCol won") or player_soup.find(class_="kdDiffCol lost"):
+				elif player_soup.find(class_="kdDiffCol won") or player_soup.find(class_="kdDiffCol lost") or player_soup.find(class_="kdDiffCol"):
 					k_d_diff_list.append(player_soup.string)
 					k_d_diff = str(player_soup.string)
 					k_d_diff_floats.append(int(k_d_diff))
@@ -233,12 +237,12 @@ def all_players_list():
 					k_d_floats.append(float(k_d))
 				elif player_soup.find(class_="ratingCol ratingPositive") or player_soup.find(class_="ratingCol ratingNegative") or player_soup.find(class_="ratingCol ratingNeutral"):
 					rating_list.append(player_soup.string)
-					rating = str(player_soup.string)
-					rating_floats.append(float(rating))
-
+					rating = float(player_soup.string)
+					rating_floats.append(rating)
+     
 	df = pd.DataFrame(data=players_dictionary)
- 
-	rating_average = float(sum(rating_floats) / len(df))
+
+	average_rating = sum(rating_floats) / len(df)
 	k_d_average = float(sum(k_d_floats)/ len(df))
 	map_average = float(sum(map_floats) / len(df))
 	k_d_diff_average = float(sum(k_d_diff_floats) / len(df))
@@ -252,19 +256,28 @@ def all_players_list():
 		request = input(f"Specify player name to retrieve their stats or 'ALL' to show ALL {len(df)} players' stats: ")
 		if request.lower() == "all":
 			print(df, "\n")
-			print("Average Rating: ", round(rating_average, 2))
+			print("Average Rating: ", round(average_rating,2))
 			print("K-D Average: ", round(k_d_average, 2))
 			print("K-D Diff Average: ", round(k_d_diff_average, 2))
 			print("Round Average: ", round(round_average, 2))
 			print("Map Average: ", round(map_average, 2))
-			search = input("\nLookup player stats: 'YES' or 'NO': ")
-			while search.lower() == "yes":
-				player_name = input("\nSpecify Players Name: ")
-				find_player_stats(player_name, df)
-				search = input("\nLookup player stats: 'YES' or 'NO': ")
 		else:
 			find_player_stats(request, df)
-
+def player_lookup(df):
+	global average_rating
+	search = input("\nLookup player stats: 'YES' or 'NO': ")
+	while search.lower() == "yes":
+		player_name = input("\nSpecify Players Name: ")
+		find_player_stats(player_name, df)
+  
+def print_data(player_number, df):
+	print("Player  [" + df.iloc[player_number]['Player'] + "]")
+	print("Maps  [" + df.iloc[player_number]['Maps'] + "]")
+	print("Rating  [" + df.iloc[player_number]['Rating'] + "]" + "  VS   Average Rating:  [", round(average_rating,2), "]")
+	print("Rounds  [" + df.iloc[player_number]['Rounds'] + "]")
+	print("K/D  [" + df.iloc[player_number]['K/D'] + "]")
+	print("K-D Diff  [" + df.iloc[player_number]['K-D Diff'] + "]")
+# Find someway to pass rating_average
 ## Main Method controlling the actual flow of execution
 
 #Main Method for the Regular Usage of cs.py
