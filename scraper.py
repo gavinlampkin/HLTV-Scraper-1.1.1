@@ -30,8 +30,11 @@ Thanks for using our CSGO Stats Scraper.
 github: gavinx17
 """
 # Global Variables
-
 average_rating = 0
+average_maps = 0
+average_k_d = 0
+average_rounds = 0
+
 # This Block is intended for the Faster Usage Ability of cs.py from console
 arguments_list = sys.argv
 if (len(arguments_list) > 1):
@@ -58,7 +61,6 @@ if (len(arguments_list) > 1):
 			quit()
 else:
 	regular_flow_execution = True
-
 
 
 # Functions constructing cs.py:
@@ -206,6 +208,9 @@ def all_players_list():
 	map_floats=list()
 	round_floats=list()
 	global average_rating
+	global average_maps
+	global average_k_d
+	global average_rounds
 	players_dictionary = {"Player": players_name_list, "Maps": maps_list, "Rounds": rounds_list, "K-D Diff": k_d_diff_list, "K/D": k_d_list, "Rating": rating_list}
 
 	for element_tag in soup.find_all("tbody"):
@@ -243,10 +248,10 @@ def all_players_list():
 	df = pd.DataFrame(data=players_dictionary)
 
 	average_rating = sum(rating_floats) / len(df)
-	k_d_average = float(sum(k_d_floats)/ len(df))
-	map_average = float(sum(map_floats) / len(df))
+	average_k_d = float(sum(k_d_floats)/ len(df))
+	average_maps = float(sum(map_floats) / len(df))
 	k_d_diff_average = float(sum(k_d_diff_floats) / len(df))
-	round_average = float(sum(round_floats) / len(df))
+	average_rounds = float(sum(round_floats) / len(df))
 
 	if (target_player_bool == True): #Handling the Fast Usage Ability of cs.py
 		find_player_stats(target_player, df)
@@ -257,12 +262,13 @@ def all_players_list():
 		if request.lower() == "all":
 			print(df, "\n")
 			print("Average Rating: ", round(average_rating,2))
-			print("K-D Average: ", round(k_d_average, 2))
+			print("K-D Average: ", round(average_k_d, 2))
 			print("K-D Diff Average: ", round(k_d_diff_average, 2))
-			print("Round Average: ", round(round_average, 2))
-			print("Map Average: ", round(map_average, 2))
+			print("Round Average: ", round(average_rounds, 2))
+			print("Map Average: ", round(average_maps, 2))
 		else:
 			find_player_stats(request, df)
+   
 def player_lookup(df):
 	global average_rating
 	search = input("\nLookup player stats: 'YES' or 'NO': ")
@@ -272,10 +278,10 @@ def player_lookup(df):
   
 def print_data(player_number, df):
 	print("Player  [" + df.iloc[player_number]['Player'] + "]")
-	print("Maps  [" + df.iloc[player_number]['Maps'] + "]")
+	print("Maps  [" + df.iloc[player_number]['Maps'] + "]" + "	VS Average Maps:  [", round(average_maps,2), "]")
 	print("Rating  [" + df.iloc[player_number]['Rating'] + "]" + "  VS   Average Rating:  [", round(average_rating,2), "]")
-	print("Rounds  [" + df.iloc[player_number]['Rounds'] + "]")
-	print("K/D  [" + df.iloc[player_number]['K/D'] + "]")
+	print("Rounds  [" + df.iloc[player_number]['Rounds'] + "]" + "  VS Average Rounds:  [", round(average_rounds,2), "]")
+	print("K/D  [" + df.iloc[player_number]['K/D'] + "]" + "  VS Average K/D:  [", round(average_k_d,2), "]")
 	print("K-D Diff  [" + df.iloc[player_number]['K-D Diff'] + "]")
 # Find someway to pass rating_average
 ## Main Method controlling the actual flow of execution
