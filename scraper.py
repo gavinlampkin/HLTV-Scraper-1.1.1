@@ -34,6 +34,8 @@ average_rating = 0
 average_maps = 0
 average_k_d = 0
 average_rounds = 0
+target_player_bool = bool
+
 
 # This Block is intended for the Faster Usage Ability of cs.py from console
 arguments_list = sys.argv
@@ -64,7 +66,38 @@ else:
 
 
 # Functions constructing cs.py:
+def main_menu():
+	global target_player_bool
+	if (regular_flow_execution == True):
+		active=True 
+		while (active==True):
+			user_request = input("\nSpecify your request from: TPT (Top Players & Teams), SP (Specific Player), LM (Live Matches), H for Help and X to exit the program: ")
+			if user_request.lower() == "tpt":
+				startDate, endDate = range_constructor()
+				top_players_teams(startDate, endDate)
 
+			elif user_request.lower() == "lm":
+				target_player_bool = False
+				match_stats()
+       
+			elif user_request.lower() == "sp":
+				target_player_bool = False
+				all_players_list()
+
+			elif user_request.lower() == 'h':
+				print(help_message + " \n")
+
+			elif user_request.lower() == "x":
+				print("\nThanks for using my HLTV Stats Scraper!\n")
+				active=False
+
+	#Main Method for the Faster Usage Ability of cs.py
+	elif (regular_flow_execution == False):
+		if len(arguments_list) == 4:
+			all_players_list()
+		else:
+			top_players_teams(startDate, endDate)
+   
 def date_logic(start_end):
 	"""Logical evaluation of the dates given by the user"""
 	date_input = input(start_end)
@@ -178,20 +211,8 @@ def top_players_teams(startDate, endDate):
 		print("\nTop Team Rating Average: ", round(team_rating_average,2))
 		print("Top Team Map Average: ", round(team_map_average,2))
 	
-
-def find_player_stats(target_player, df):
-	"""Determines stats of a user specified player, given the dataframe to scrape"""
-	target_player_name_count = 0
-	for player_number in range(0,len(df)):
-		if df.iloc[player_number]['Player'] == target_player:
-			print_data(player_number, df)
-			player_lookup(df)
-			target_player_name_count += 1
-			if target_player_name_count == 0:
-				print(f"[!ERROR!] {target_player} couldn't be found in the top leaderboards.\n[!] Player Names are CASE Sensitive.")
-
 def all_players_list():
-
+    
 	url = "https://www.hltv.org/stats/players"
 	dr = webdriver.Chrome()
 	dr.get(url)
@@ -211,6 +232,7 @@ def all_players_list():
 	global average_maps
 	global average_k_d
 	global average_rounds
+	global target_player_bool
 	players_dictionary = {"Player": players_name_list, "Maps": maps_list, "Rounds": rounds_list, "K-D Diff": k_d_diff_list, "K/D": k_d_list, "Rating": rating_list}
 
 	for element_tag in soup.find_all("tbody"):
@@ -247,7 +269,7 @@ def all_players_list():
      
 	df = pd.DataFrame(data=players_dictionary)
 
-	average_rating = sum(rating_floats) / len(df)
+	average_rating = float(sum(rating_floats) / len(df))
 	average_k_d = float(sum(k_d_floats)/ len(df))
 	average_maps = float(sum(map_floats) / len(df))
 	k_d_diff_average = float(sum(k_d_diff_floats) / len(df))
@@ -266,49 +288,98 @@ def all_players_list():
 			print("K-D Diff Average: ", round(k_d_diff_average, 2))
 			print("Round Average: ", round(average_rounds, 2))
 			print("Map Average: ", round(average_maps, 2))
+			player_lookup(df)
 		else:
 			find_player_stats(request, df)
    
 def player_lookup(df):
-	global average_rating
 	search = input("\nLookup player stats: 'YES' or 'NO': ")
 	while search.lower() == "yes":
 		player_name = input("\nSpecify Players Name: ")
 		find_player_stats(player_name, df)
+	else:
+		main_menu()
+
+def find_player_stats(target_player, df):
+	"""Determines stats of a user specified player, given the dataframe to scrape"""
+	target_player_name_count = 0
+	for player_number in range(0,len(df)):
+		if df.iloc[player_number]['Player'] == target_player:
+			print_player_data(player_number, df)
+			player_lookup(df)
+			target_player_name_count += 1
+			if target_player_name_count == 0:
+				print(f"[!ERROR!] {target_player} couldn't be found in the top leaderboards.\n[!] Player Names are CASE Sensitive.")
   
-def print_data(player_number, df):
+def print_player_data(player_number, df):
 	print("Player  [" + df.iloc[player_number]['Player'] + "]")
 	print("Maps  [" + df.iloc[player_number]['Maps'] + "]" + "	VS Average Maps:  [", round(average_maps,2), "]")
 	print("Rating  [" + df.iloc[player_number]['Rating'] + "]" + "  VS   Average Rating:  [", round(average_rating,2), "]")
 	print("Rounds  [" + df.iloc[player_number]['Rounds'] + "]" + "  VS Average Rounds:  [", round(average_rounds,2), "]")
 	print("K/D  [" + df.iloc[player_number]['K/D'] + "]" + "  VS Average K/D:  [", round(average_k_d,2), "]")
 	print("K-D Diff  [" + df.iloc[player_number]['K-D Diff'] + "]")
+ 
+def match_stats():
+	url = "https://www.hltv.org/matches"
+	dr = webdriver.Chrome()
+	dr.get(url)
+	soup = BeautifulSoup(dr.page_source, "html.parser")
+#	df = get_player_df()
+	team_names = list()
+	count = 0
+	team_one_players = {"Team": team_names}
+	print("[+]LIVE MATCHES:\n")
+	for element_tag in soup.find_all(class_="widthControl"):
+		for row in element_tag.find_all(class_="newMatches"):
+			for col in row.find_all(class_="liveMatchesContainer"):
+				for matches in col.find_all(class_="matchTeamName"):
+					teams = matches.string
+					if count % 2 == 1:
+						print(teams)
+						count = count + 1
+					elif count % 2 == 0: 
+						print(teams + " vs ", end="")
+						count = count + 1
+    
+def get_player_df():
+	url = "https://www.hltv.org/stats/players"
+	dr = webdriver.Chrome()
+	dr.get(url)
+	soup = BeautifulSoup(dr.page_source, "html.parser")
+	players_name_list=list()
+	maps_list=list()
+	rounds_list=list()
+	k_d_diff_list=list()
+	k_d_list=list()
+	rating_list=list()
+	players_dictionary = {"Player": players_name_list, "Maps": maps_list, "Rounds": rounds_list, "K-D Diff": k_d_diff_list, "K/D": k_d_list, "Rating": rating_list}
+
+	for element_tag in soup.find_all("tbody"):
+		for row in element_tag.find_all("tr"):
+			count=0
+			for col in row.find_all("td"):
+				col = str(col)
+				player_soup = BeautifulSoup(col, "html.parser")
+				if player_soup.find(class_='playerCol'):
+					name = player_soup.find("a").string
+					players_name_list.append(name)	
+				elif player_soup.find(class_='statsDetail') and count % 2 == 0:
+					count+=1
+					maps_list.append(player_soup.string)
+				elif player_soup.find(class_='statsDetail gtSmartphone-only'):
+					rounds_list.append(player_soup.string)
+				elif player_soup.find(class_="kdDiffCol won") or player_soup.find(class_="kdDiffCol lost") or player_soup.find(class_="kdDiffCol"):
+					k_d_diff_list.append(player_soup.string)
+				elif player_soup.find(class_="statsDetail") and count % 2 == 1:
+					count+=1
+					k_d_list.append(player_soup.string)
+				elif player_soup.find(class_="ratingCol ratingPositive") or player_soup.find(class_="ratingCol ratingNegative") or player_soup.find(class_="ratingCol ratingNeutral"):
+					rating_list.append(player_soup.string)
+		
+	df = pd.DataFrame(data=players_dictionary)
+	return df
 # Find someway to pass rating_average
 ## Main Method controlling the actual flow of execution
 
 #Main Method for the Regular Usage of cs.py
-if (regular_flow_execution == True):
-	active=True 
-	while (active==True):
-		user_request = input("\nSpecify your request from: TPT (Top Players & Teams), SP (Specific Player), H for Help and X to exit the program: ")
-		if user_request.lower() == "tpt":
-			startDate, endDate = range_constructor()
-			top_players_teams(startDate, endDate)
-
-		elif user_request.lower() == "sp":
-			target_player_bool = False
-			all_players_list()
-
-		elif user_request.lower() == 'h':
-			print(help_message + " \n")
-
-		elif user_request.lower() == "x":
-			print("\nThanks for using our CSGO Stats Scraper - Happy Gaming!\n")
-			active=False
-
-#Main Method for the Faster Usage Ability of cs.py
-elif (regular_flow_execution == False):
-	if len(arguments_list) == 4:
-		all_players_list()
-	else:
-		top_players_teams(startDate, endDate)
+main_menu()
