@@ -27,7 +27,7 @@ The Program allows its users to:
 2- SP: Search for a specific player in the top leaderboards and retrieve this player's stats.
 
 Thanks for using our CSGO Stats Scraper.
-github: gavinx17
+github: gavinlampkin
 """
 # Global Variables
 average_rating = 0
