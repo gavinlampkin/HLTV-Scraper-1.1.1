@@ -27,7 +27,7 @@ The Program allows its users to:
 2- SP: Search for a specific player in the top leaderboards and retrieve this player's stats.
 
 Thanks for using our CSGO Stats Scraper.
-github: gavinlampkin
+github: gavinx17
 """
 # Global Variables
 average_rating = 0
@@ -324,23 +324,35 @@ def match_stats():
 	dr = webdriver.Chrome()
 	dr.get(url)
 	soup = BeautifulSoup(dr.page_source, "html.parser")
-#	df = get_player_df()
 	team_names = list()
+	event_names = list()
+	current_match_scores = list()
+	map_scores = list()
 	count = 0
-	team_one_players = {"Team": team_names}
 	print("[+]LIVE MATCHES:\n")
 	for element_tag in soup.find_all(class_="widthControl"):
 		for row in element_tag.find_all(class_="newMatches"):
 			for col in row.find_all(class_="liveMatchesContainer"):
-				for matches in col.find_all(class_="matchTeamName"):
-					teams = matches.string
-					if count % 2 == 1:
-						print(teams)
-						count = count + 1
-					elif count % 2 == 0: 
-						print(teams + " vs ", end="")
-						count = count + 1
-    
+				for event in col.find_all(class_="matchEventName gtSmartphone-only"):
+					event_names.append(event.string)
+			for matches in col.find_all(class_="matchTeamName"):
+					team_names.append(matches.string)
+     
+########################### BUG TO BE FIX ###########################
+# DOES NOT FIND THE STRING VARIABLE WHEN RETRIEVING MAP OR GAME SCORE
+#				for team in col.find_all(class_="matchTeamScore"):		
+#					for map_score in team.find_all(class_="mapScore"):         
+#						for scores in (map_score.find_all('span', class_="leading") or team.find_all('span', class_="trailing") or team.find_all('span', class_="tie")):
+#							print(scores.string)
+#							current_match_scores.append(scores.string)
+
+	for i in range(len(team_names)):
+		if i % 2 == 0:
+			print("Event: " + event_names[count])
+			count = count + 1    
+		else:
+			print(team_names[i-1] + " vs " + team_names[i] + '\n')  
+   
 def get_player_df():
 	url = "https://www.hltv.org/stats/players"
 	dr = webdriver.Chrome()
