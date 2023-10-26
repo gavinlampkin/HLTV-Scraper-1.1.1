@@ -88,7 +88,7 @@ def main_menu():
 				print(help_message + " \n")
 
 			elif user_request.lower() == "x":
-				print("\nThanks for using my HLTV Stats Scraper!\n")
+				print("Thanks for using my HLTV Stats Scraper!\n")
 				active=False
 
 	#Main Method for the Faster Usage Ability of cs.py
@@ -151,9 +151,9 @@ def top_players_teams(startDate, endDate):
 	player_rating_average = 0
 	team_map_average = 0
 	team_rating_average = 0
+	count = 0
  
 	all_top_players_info = soup.find(class_="col")
-	all_top_teams_info = all_top_players_info.find_next(class_="col")
 
 	# Top Players Scraper 
 	for name in all_top_players_info.find_all('a', class_ = "name"):
@@ -170,20 +170,31 @@ def top_players_teams(startDate, endDate):
 		player_nb_maps = str(player_nb_maps)
 		player_map_average = player_map_average + int(player_nb_maps)
 
-	# Top Teams Scraper 
-	for name in all_top_teams_info.find_all_next('a', class_="name"):
-		team_name = name.string
-		top_teams_list.append(team_name)
-	for rating in all_top_teams_info.find_all_next('div', class_="rating"):
-		team_rating = rating.contents[0].string
-		team_ranking_list.append(team_rating)
-		team_rating = str(team_rating)
-		team_rating_average = team_rating_average + float(team_rating)
-	for maps in all_top_teams_info.find_all_next('div', class_="average gtSmartphone-only"):
-		team_nb_maps = maps.contents[0].string
-		team_maps_list.append(team_nb_maps)
-		team_nb_maps = str(team_nb_maps)
-		team_map_average = team_map_average + int(team_nb_maps)
+	# Top Teams Scraper
+	for name in all_top_players_info.find_all_next('a', class_="name"):
+		if count > 7:
+			team_name = name.string
+			top_teams_list.append(team_name)
+			count+=1
+		count+=1
+	count = 0
+	for rating in all_top_players_info.find_all_next('div', class_="rating"):
+		if count > 7:
+			team_rating = rating.contents[0].string
+			team_ranking_list.append(team_rating)
+			team_rating = str(team_rating)
+			team_rating_average = team_rating_average + float(team_rating)
+			count+=1
+		count+=1
+	count = 0
+	for map in all_top_players_info.find_all_next('div', class_="average gtSmartphone-only"):
+		if count > 7:
+			team_nb_maps = map.contents[0].string
+			team_maps_list.append(team_nb_maps)
+			team_nb_maps = str(team_nb_maps)
+			team_map_average = team_map_average + float(team_nb_maps)
+			count+=1
+		count+=1
 
 	# Table Reports Generator in top_players_teams(startDate, endDate)
 	player_table_report = pd.DataFrame(data={'Player   ':top_players_list, 'Rating':player_ranking_list, '  Maps':player_maps_list})
@@ -293,7 +304,7 @@ def all_players_list():
 			find_player_stats(request, df)
    
 def player_lookup(df):
-	search = input("\nLookup player stats: 'YES' or 'NO': ")
+	search = input("\nLookup another players stats: 'YES' or 'NO': ")
 	while search.lower() == "yes":
 		player_name = input("\nSpecify Players Name: ")
 		find_player_stats(player_name, df)
@@ -390,7 +401,6 @@ def get_player_df():
 		
 	df = pd.DataFrame(data=players_dictionary)
 	return df
-# Find someway to pass rating_average
 ## Main Method controlling the actual flow of execution
 
 #Main Method for the Regular Usage of cs.py
